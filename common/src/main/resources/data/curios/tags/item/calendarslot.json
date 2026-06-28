@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "sereneseasons:calendar",
+      "required": false
+    },
+    {
+      "id": "seasonsextras:season_calendar",
+      "required": false
+    },
+    {
+      "id": "eclipticseasons:calendar",
+      "required": false
+    }
+  ]
+}

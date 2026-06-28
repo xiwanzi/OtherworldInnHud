@@ -1,0 +1,33 @@
+# Project exclude paths
+/.architectury-transformer/
+/.gradle/
+/build/
+/common/.gradle/
+/common/build/
+/common/run/
+/fabric/.gradle/
+/fabric/build/
+/fabric/run*/
+/forge/.gradle/
+/forge/build/
+/forge/run*/
+/neoforge/.gradle/
+/neoforge/build/
+/neoforge/run*/
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea/
+# gradle
+build
+.gradle
+# other
+run
+/.depUpdater/
+/update-seasonhud-deps.ps1
+/dist/
+/.affinity/
+/.datapacks/
+/.logo/

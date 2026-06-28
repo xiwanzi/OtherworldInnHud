@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "club.iananderson.seasonhud.mixin",
+  "plugin": "club.iananderson.seasonhud.mixin.SeasonHudMixinPlugin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+  ],
+  "client": [
+    "mapatlases.MapAtlasHudMixin",
+    "xaero.XaeroBuiltInInfoDisplays"
+  ],
+  "injectors": {
+    "defaultRequire": 1,
+    "maxShiftBy": 2
+  }
+}

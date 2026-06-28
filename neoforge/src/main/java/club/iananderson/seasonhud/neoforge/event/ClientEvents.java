@@ -1,0 +1,39 @@
+package club.iananderson.seasonhud.neoforge.event;
+
+import club.iananderson.seasonhud.Common;
+import club.iananderson.seasonhud.client.KeyBindings;
+import club.iananderson.seasonhud.client.SeasonHudClientCommon;
+import club.iananderson.seasonhud.neoforge.client.overlays.SeasonHudOverlay;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+
+@EventBusSubscriber(value = Dist.CLIENT, modid = Common.MOD_ID)
+public class ClientEvents {
+
+  @SubscribeEvent
+  public static void onKeyInput(InputEvent.Key event) {
+    SeasonHudClientCommon.optionsKeyInput();
+  }
+
+  @EventBusSubscriber(value = Dist.CLIENT, modid = Common.MOD_ID)
+  public static class ModBus {
+    // Overlays
+    @SubscribeEvent
+    public static void registerGuiOverlays(RegisterGuiLayersEvent event) {
+      SeasonHudOverlay.init();
+      event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, Common.location("seasonhud"),
+                          SeasonHudOverlay.HUD_INSTANCE);
+    }
+
+    // Key Bindings
+    @SubscribeEvent
+    public static void onKeyRegister(RegisterKeyMappingsEvent event) {
+      event.register(KeyBindings.seasonhudOptionsKeyMapping);
+    }
+  }
+}

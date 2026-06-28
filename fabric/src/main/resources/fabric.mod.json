@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${version}",
+  "name": "${mod_name}",
+  "description": "${mod_description}",
+  "authors": [
+    "${mod_author}"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/seasonhud-fabric",
+    "sources": "${repoURL}",
+    "issues": "${issueTrackerURL}"
+  },
+  "license": "${license}",
+  "icon": "${mod_id}.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "club.iananderson.seasonhud.fabric.client.SeasonHudClientFabric"
+    ],
+    "main": [
+      "club.iananderson.seasonhud.fabric.SeasonHudFabric"
+    ],
+    "journeymap": [
+      "club.iananderson.seasonhud.impl.minimap.mods.journeymap.JourneymapSeasonPlugin"
+    ],
+    "modmenu": [
+      "club.iananderson.seasonhud.fabric.impl.ModMenuSeasonHud"
+    ]
+  },
+  "mixins": [
+    "seasonhud.mixins.json"
+  ],
+  "depends": {
+    "fabric-api": "*",
+    "minecraft": "${fabric_version_range}",
+    "java": ">=${java_version}",
+    "fabric-key-binding-api-v1": "*",
+    "forgeconfigapiport": "*"
+  },
+  "recommends": {
+    "fabricloader": "~${fabric_loader_version}"
+  },
+  "breaks": {
+    "seasons": "<2.4.2-BETA",
+    "sereneseasons": "<9.1.0.0",
+    "xaerominimap": "<25.3.0",
+    "journeymap": "<1.21-6.0.0-beta.25",
+    "ftbchunks": "<2101.1.10"
+  }
+}

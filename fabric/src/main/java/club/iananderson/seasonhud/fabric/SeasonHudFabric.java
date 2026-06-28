@@ -1,0 +1,33 @@
+package club.iananderson.seasonhud.fabric;
+
+import club.iananderson.seasonhud.Common;
+import club.iananderson.seasonhud.config.SeasonHudClient;
+import club.iananderson.seasonhud.config.SeasonHudServer;
+import club.iananderson.seasonhud.impl.accessory.mods.accessories.AccessoriesCompat;
+import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
+import net.fabricmc.api.ModInitializer;
+import net.neoforged.fml.config.ModConfig;
+
+public class SeasonHudFabric implements ModInitializer {
+
+  public SeasonHudFabric() {
+  }
+
+  /**
+   * Runs the mod initializer.
+   */
+  @Override
+  public void onInitialize() {
+    Common.init();
+
+    NeoForgeConfigRegistry.INSTANCE.register(Common.MOD_ID, ModConfig.Type.CLIENT, SeasonHudClient.CLIENT_SPEC,
+                                             "seasonhud-client.toml");
+
+    NeoForgeConfigRegistry.INSTANCE.register(Common.MOD_ID, ModConfig.Type.SERVER, SeasonHudServer.SERVER_SPEC,
+                                             "seasonhud-server.toml");
+
+    if (Common.accessoriesLoaded() && !Common.trinketsLoaded()) {
+      AccessoriesCompat.init();
+    }
+  }
+}
