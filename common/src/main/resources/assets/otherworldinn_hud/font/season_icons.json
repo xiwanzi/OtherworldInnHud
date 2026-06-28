@@ -1,0 +1,74 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        " ": 2,
+        "\u200c": 0
+      }
+    },
+    {
+      "type": "bitmap",
+      "file": "otherworldinn_hud:season/spring.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        "\uEA00"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "otherworldinn_hud:season/summer.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        "\uEA01"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "otherworldinn_hud:season/autumn.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        "\uEA02"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "otherworldinn_hud:season/winter.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        "\uEA03"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "otherworldinn_hud:season/dry.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        "\uEA04"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "otherworldinn_hud:season/wet.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        "\uEA05"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "otherworldinn_hud:season/null.png",
+      "ascent": 8,
+      "height": 9,
+      "chars": [
+        "\uEA99"
+      ]
+    }
+  ]
+}

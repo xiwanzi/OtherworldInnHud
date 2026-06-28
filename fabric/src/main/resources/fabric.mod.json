@@ -8,7 +8,7 @@
     "${mod_author}"
   ],
   "contact": {
-    "homepage": "https://www.curseforge.com/minecraft/mc-mods/seasonhud-fabric",
+    "homepage": "https://github.com/xiwanzi/OtherworldInnHud",
     "sources": "${repoURL}",
     "issues": "${issueTrackerURL}"
   },
@@ -17,20 +17,20 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "club.iananderson.seasonhud.fabric.client.SeasonHudClientFabric"
+      "com.xiwanzi.otherworldinnhud.fabric.client.OtherworldInnHudClientFabric"
     ],
     "main": [
-      "club.iananderson.seasonhud.fabric.SeasonHudFabric"
+      "com.xiwanzi.otherworldinnhud.fabric.OtherworldInnHudFabric"
     ],
     "journeymap": [
-      "club.iananderson.seasonhud.impl.minimap.mods.journeymap.JourneymapSeasonPlugin"
+      "com.xiwanzi.otherworldinnhud.impl.minimap.mods.journeymap.JourneymapSeasonPlugin"
     ],
     "modmenu": [
-      "club.iananderson.seasonhud.fabric.impl.ModMenuSeasonHud"
+      "com.xiwanzi.otherworldinnhud.fabric.impl.ModMenuOtherworldInnHud"
     ]
   },
   "mixins": [
-    "seasonhud.mixins.json"
+    "otherworldinn_hud.mixins.json"
   ],
   "depends": {
     "fabric-api": "*",

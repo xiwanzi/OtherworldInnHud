@@ -1,0 +1,109 @@
+package com.xiwanzi.otherworldinnhud.client.gui.components.sliders;
+
+import com.xiwanzi.otherworldinnhud.Common;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+public class HudScaleSlider extends BasicSlider {
+  protected final Component prefix;
+
+  protected HudScaleSlider(int x, int y, int width, int height, Component prefix, double initial, double minValue,
+      double maxValue, double defaultValue, double stepSize, int precision) {
+    super(x, y, width, height, true, initial, minValue, maxValue, defaultValue, stepSize, precision);
+    this.prefix = prefix;
+    this.updateMessage();
+  }
+
+  public static HudScaleSlider.Builder builder(Component prefix) {
+    return new HudScaleSlider.Builder(prefix);
+  }
+
+  @Override
+  protected void updateMessage() {
+    if (this.drawString) {
+      this.setMessage(Common.literalText("").append(this.prefix).append(this.getValueString()));
+    } else {
+      this.setMessage(Component.empty());
+    }
+  }
+
+  @Override
+  public void renderWidget(@NonNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    super.renderWidget(graphics, mouseX, mouseY, partialTick);
+  }
+
+  public static class Builder {
+    protected final Component prefix;
+    protected int posX;
+    protected int posY;
+    protected int width = 180;
+    protected int height = 20;
+    protected double minValue;
+    protected double maxValue;
+    protected double initial;
+    protected double defaultValue;
+    protected Tooltip tooltip;
+    protected double stepSize;
+    protected int precision;
+
+    public Builder(Component prefix) {
+      this.prefix = prefix;
+    }
+
+    public HudScaleSlider.Builder withBounds(int x, int y, int width, int height) {
+      this.posX = x;
+      this.posY = y;
+      this.width = width;
+      this.height = height;
+      return this;
+    }
+
+    public HudScaleSlider.Builder withValueRange(double minValue, double maxValue) {
+      this.minValue = minValue;
+      this.maxValue = maxValue;
+      return this;
+    }
+
+    public HudScaleSlider.Builder withInitialValue(double initial) {
+      this.initial = initial;
+      return this;
+    }
+
+    /**
+     * Sets the default value to return to when right-clicked.
+     *
+     * @param defaultValue The value that the slider will return to if right-clicked.
+     */
+    public HudScaleSlider.Builder withDefaultValue(double defaultValue) {
+      this.defaultValue = defaultValue;
+      return this;
+    }
+
+    public HudScaleSlider.Builder withStepSize(double stepSize) {
+      this.stepSize = stepSize;
+      return this;
+    }
+
+    public HudScaleSlider.Builder withPrecision(int precision) {
+      this.precision = precision;
+      return this;
+    }
+
+    public HudScaleSlider.Builder withTooltip(@Nullable Tooltip tooltip) {
+      this.tooltip = tooltip;
+
+      return this;
+    }
+
+    public HudScaleSlider build() {
+      HudScaleSlider slider = new HudScaleSlider(this.posX, this.posY, this.width, this.height, this.prefix,
+                                                 this.initial, this.minValue, this.maxValue, this.defaultValue,
+                                                 this.stepSize, this.precision);
+      slider.setTooltip(this.tooltip);
+      return slider;
+    }
+  }
+}

@@ -1,0 +1,103 @@
+package com.xiwanzi.otherworldinnhud.util;
+
+import com.xiwanzi.otherworldinnhud.impl.season.components.Fertility;
+import com.xiwanzi.otherworldinnhud.impl.season.components.Seasons;
+import java.awt.Color;
+import java.util.HashMap;
+import java.util.Map;
+
+public class Rgb {
+  private Rgb() {
+  }
+
+  public static Map<String, Integer> seasonMap(int rgb) {
+    Map<String, Integer> rgbMap = new HashMap<>();
+
+    rgbMap.put("r", rgbColor(rgb).getRed());
+    rgbMap.put("g", rgbColor(rgb).getGreen());
+    rgbMap.put("b", rgbColor(rgb).getBlue());
+    rgbMap.put("rgb", rgb);
+
+    return rgbMap;
+  }
+
+  public static Map<String, Integer> defaultSeasonMap(Seasons season) {
+    Map<String, Integer> defaultRgbMap = new HashMap<>();
+
+    int rgb = season.getDefaultColor();
+
+    defaultRgbMap.put("r", rgbColor(rgb).getRed());
+    defaultRgbMap.put("g", rgbColor(rgb).getGreen());
+    defaultRgbMap.put("b", rgbColor(rgb).getBlue());
+    defaultRgbMap.put("rgb", rgb);
+
+    return defaultRgbMap;
+  }
+
+  public static int rgbInt(int r, int g, int b) {
+    return (256 * 256 * r) + (256 * g) + b;
+  }
+
+  public static Color rgbColor(int rgb) {
+    return new Color(rgb);
+  }
+
+  public static int red(int rgb) {
+    return new Color(rgb).getRed();
+  }
+
+  public static int green(int rgb) {
+    return new Color(rgb).getGreen();
+  }
+
+  public static int blue(int rgb) {
+    return new Color(rgb).getBlue();
+  }
+
+  public static void setRgb(Seasons season, int rgb) {
+    season.getRgbMap().put("r", red(rgb));
+    season.getRgbMap().put("g", green(rgb));
+    season.getRgbMap().put("b", blue(rgb));
+    season.getRgbMap().put("rgb", rgb);
+  }
+
+  public static void setRgb(Seasons season, int r, int g, int b) {
+    season.getRgbMap().put("r", r);
+    season.getRgbMap().put("g", g);
+    season.getRgbMap().put("b", b);
+    season.getRgbMap().put("rgb", rgbInt(r, g, b));
+  }
+
+  public static int getRgb(Seasons season) {
+    return season.getRgbMap().get("rgb");
+  }
+
+  public static int getRed(Seasons season) {
+    return season.getRgbMap().get("r");
+  }
+
+  public static int getGreen(Seasons season) {
+    return season.getRgbMap().get("g");
+  }
+
+  public static int getBlue(Seasons season) {
+    return season.getRgbMap().get("b");
+  }
+
+  public static int mixRgb(Seasons season, Fertility fertility) {
+    int fertilityColor = fertility.getColor();
+    int seasonColor = season.getSeasonColor();
+
+    // White = default color
+    if (fertilityColor == 16777215) {
+      return seasonColor;
+    } else {
+      // (3/4 seasonColor + 1/4 fertilityColor) / 2
+      int mixedRed = (int) ((0.9 * red(seasonColor)) + (0.1 * red(fertilityColor)));
+      int mixedGreen = (int) ((0.9 * green(seasonColor)) + (0.1 * green(fertilityColor)));
+      int mixedBlue = (int) ((0.9 * blue(seasonColor)) + (0.1 * blue(fertilityColor)));
+
+      return rgbInt(mixedRed, mixedGreen, mixedBlue);
+    }
+  }
+}

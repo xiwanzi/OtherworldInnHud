@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.xiwanzi.otherworldinnhud.mixin",
+  "plugin": "com.xiwanzi.otherworldinnhud.mixin.OtherworldInnHudMixinPlugin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+  ],
+  "client": [
+    "mapatlases.MapAtlasHudMixin",
+    "xaero.XaeroBuiltInInfoDisplays"
+  ],
+  "injectors": {
+    "defaultRequire": 1,
+    "maxShiftBy": 2
+  }
+}

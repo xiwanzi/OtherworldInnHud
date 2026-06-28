@@ -1,0 +1,66 @@
+package com.xiwanzi.otherworldinnhud.platform.services;
+
+import com.xiwanzi.otherworldinnhud.impl.season.components.Months;
+import com.xiwanzi.otherworldinnhud.impl.season.components.Seasons;
+import com.xiwanzi.otherworldinnhud.impl.season.components.SubSeasons;
+import java.util.Optional;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.Level;
+
+public interface SeasonHelper {
+  // FabricSeasons
+  boolean validFabricSeasonsDim(ResourceKey<Level> currentDim);
+
+  boolean fabricSeasonsTiedWithSystemTime();
+
+  Optional<Item> fabricSeasonsCalendar();
+
+  SubSeasons currentFabricSubSeason(Player player);
+
+  Seasons currentFabricSeason(Player player);
+
+  int currentFabricSeasonLength(Player player);
+
+  long timeToNextFabricSeason(Player player);
+
+  // SereneSeasons
+  boolean validSereneSeasonsDim(ResourceKey<Level> currentDim);
+
+  // EclipticSeasons
+  boolean validEclipticSeasonsDim(ResourceKey<Level> currentDim);
+
+  Component eclipticSeasonComponent(Player player);
+
+  SubSeasons currentEclipticSubSeason(Player player);
+
+  Seasons currentEclipticSeason(Player player);
+
+  long currentEclipticSeasonDate(Player player);
+
+  int currentEclipticSeasonDuration(Player player);
+
+  // TerrafirmaCraft
+  Months currentTerraFirmaCraftMonth();
+
+  int terraFirmaCraftCurrentDayOfMonth();
+
+  int terraFirmaCraftTotalDaysInMonth();
+
+  // HomeostaticSeasons
+  boolean validHomeostaticSeasonsDim(ResourceKey<Level> currentDim);
+
+  // ProtoManly's Weather
+  Optional<Item> protoManlyWeatherCalendar();
+
+  Months protoManlyWeatherMonth(Player player);
+
+  int protoManlyWeatherCurrentDayOfMonth(Player player);
+
+  int protoManlyWeatherTotalDaysInMonth(Player player);
+
+  void protoManlyDebug(GuiGraphics graphics);
+}
