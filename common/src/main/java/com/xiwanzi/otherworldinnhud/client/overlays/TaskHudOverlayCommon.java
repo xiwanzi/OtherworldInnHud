@@ -140,7 +140,7 @@ public final class TaskHudOverlayCommon {
     int blockY = y;
     for (int i = 0; i < renderTasks.size(); i++) {
       int blockHeight = renderTask(
-          graphics, mc, renderTasks.get(i), x, blockY, blockHeights.get(i), false, TaskHudStyle.CLEAN_CLOTH);
+          graphics, mc, renderTasks.get(i), x, blockY, blockHeights.get(i), true, TaskHudStyle.CLEAN_CLOTH);
       blockY += blockHeight + gap;
     }
   }
