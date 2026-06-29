@@ -18,9 +18,9 @@ public class CurrentRoomInfo {
   private static final int COMFORT_COLOR = 0xFF6A6A;
   private static final int LIGHT_COLOR = 0xFFD700;
   private static final int HUMIDITY_COLOR = 0x97FFFF;
-  private static final int CLEANLINESS_DIRTY_COLOR = 0xC06B6B;
-  private static final int CLEANLINESS_LOW_COLOR = 0xB8AA65;
-  private static final int CLEANLINESS_CLEAN_COLOR = 0x70B878;
+  private static final int CLEANLINESS_EMPTY_COLOR = 0xFF6A6A;
+  private static final int CLEANLINESS_DIRTY_COLOR = 0xFFB347;
+  private static final int CLEANLINESS_CLEAN_COLOR = 0x00FF7F;
   private static final Style ROOM_ICON_STYLE = Style.EMPTY.withFont(Common.location("room_icons"));
   private static Accessor accessor;
   private static boolean integrationUnavailable;
@@ -73,8 +73,7 @@ public class CurrentRoomInfo {
     hasContent = appendMetric(line, hasContent, HUMIDITY_ICON, room.humidity(), Style.EMPTY.withColor(HUMIDITY_COLOR),
                               HUMIDITY_COLOR);
     int cleanlinessColor = getCleanlinessColor(room.cleanliness());
-    appendMetric(line, hasContent, CLEANLINESS_ICON, room.cleanliness(), ROOM_ICON_STYLE.withColor(cleanlinessColor),
-                 cleanlinessColor);
+    appendMetric(line, hasContent, CLEANLINESS_ICON, room.cleanliness(), ROOM_ICON_STYLE, cleanlinessColor);
 
     return line;
   }
@@ -100,24 +99,13 @@ public class CurrentRoomInfo {
 
   private static int getCleanlinessColor(int cleanliness) {
     int clampedCleanliness = Math.max(0, Math.min(100, cleanliness));
-    if (clampedCleanliness >= 100) {
+    if (clampedCleanliness == 0) {
+      return CLEANLINESS_EMPTY_COLOR;
+    } else if (clampedCleanliness >= 100) {
       return CLEANLINESS_CLEAN_COLOR;
+    } else {
+      return CLEANLINESS_DIRTY_COLOR;
     }
-    return interpolateColor(CLEANLINESS_DIRTY_COLOR, CLEANLINESS_LOW_COLOR, clampedCleanliness / 99.0F);
-  }
-
-  private static int interpolateColor(int from, int to, float amount) {
-    int fromRed = (from >> 16) & 0xFF;
-    int fromGreen = (from >> 8) & 0xFF;
-    int fromBlue = from & 0xFF;
-    int toRed = (to >> 16) & 0xFF;
-    int toGreen = (to >> 8) & 0xFF;
-    int toBlue = to & 0xFF;
-
-    int red = Math.round(fromRed + ((toRed - fromRed) * amount));
-    int green = Math.round(fromGreen + ((toGreen - fromGreen) * amount));
-    int blue = Math.round(fromBlue + ((toBlue - fromBlue) * amount));
-    return (red << 16) | (green << 8) | blue;
   }
 
   private static Class<?> loadClass(String className) throws ClassNotFoundException {
