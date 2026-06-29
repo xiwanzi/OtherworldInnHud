@@ -5,7 +5,7 @@ Otherworld Inn HUD 是 [SeasonHud](https://github.com/IanMods/SeasonHud) 的一�
 这个版本主要给旅社物语整合包使用，保留 SeasonHud 原本功能，同时做了两处调整：
 
 1. 修复 NeoForge 环境下偶发的服务加载崩溃
-2. 增加 [Otherworld Inn](https://github.com/xiwanzi/OtherworldInn) 的房间 HUD 显示
+2. 增加 [Otherworld Inn](https://github.com/Yourzi/OtherworldInn) 的房间 HUD 显示
 
 ## 为什么会有这个版本
 
@@ -28,7 +28,7 @@ ServiceLoader.load(clazz, clazz.getClassLoader())
 
 ## Otherworld Inn 适配
 
-如果安装了 [Otherworld Inn](https://github.com/xiwanzi/OtherworldInn)，HUD 会在季节信息下方额外显示当前房间状态。
+在整合包内 [Otherworld Inn](https://github.com/Yourzi/OtherworldInn)，HUD 会在季节信息下方额外显示当前房间状态。
 
 房间信息只会在玩家位于已登记的旅社房间内时显示，包括：
 
