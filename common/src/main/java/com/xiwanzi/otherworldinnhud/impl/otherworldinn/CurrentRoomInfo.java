@@ -15,12 +15,14 @@ public class CurrentRoomInfo {
   private static final String COMFORT_ICON = "\uE002";
   private static final String LIGHT_ICON = "\uE003";
   private static final String HUMIDITY_ICON = "\uE004";
+  private static final String BED_ICON = "\uEA10";
+  private static final String CLEANLINESS_ICON = "\uEA11";
   private static final int COMFORT_COLOR = 0xFF6A6A;
   private static final int LIGHT_COLOR = 0xFFD700;
   private static final int HUMIDITY_COLOR = 0x97FFFF;
-  private static final int LABEL_COLOR = 0xC0C0C0;
-  private static final int VALUE_COLOR = 0xFFFFFF;
-  private static final int WARNING_COLOR = 0xFF6A6A;
+  private static final int BED_COLOR = 0x97FFFF;
+  private static final int CLEANLINESS_COLOR = 0xFF6A6A;
+  private static final Style ROOM_ICON_STYLE = Style.EMPTY.withFont(Common.location("room_icons"));
   private static Accessor accessor;
   private static boolean integrationUnavailable;
   private static boolean failureLogged;
@@ -28,7 +30,7 @@ public class CurrentRoomInfo {
   private CurrentRoomInfo() {
   }
 
-  public static Optional<MutableComponent> getHudText(Minecraft mc) {
+  public static Optional<RoomHudText> getHudText(Minecraft mc) {
     if (mc.player == null || !Services.PLATFORM.isModLoaded(OTHERWORLD_INN_MOD_ID) || integrationUnavailable) {
       return Optional.empty();
     }
@@ -61,35 +63,51 @@ public class CurrentRoomInfo {
     }
   }
 
-  private static MutableComponent formatRoom(RoomSnapshot room) {
+  private static RoomHudText formatRoom(RoomSnapshot room) {
+    return new RoomHudText(formatAttributesLine(room), formatStatusLine(room));
+  }
+
+  private static MutableComponent formatAttributesLine(RoomSnapshot room) {
     MutableComponent line = Common.literalText("");
     boolean hasContent = false;
 
-    hasContent = appendMetric(line, hasContent, COMFORT_ICON, room.comfort(), COMFORT_COLOR);
-    hasContent = appendMetric(line, hasContent, LIGHT_ICON, room.light(), LIGHT_COLOR);
-    hasContent = appendMetric(line, hasContent, HUMIDITY_ICON, room.humidity(), HUMIDITY_COLOR);
-
-    if (room.cleanliness() < 100) {
-      appendSeparator(line, hasContent);
-      hasContent = true;
-      line.append(Common.literalText("净 ").withStyle(Style.EMPTY.withColor(LABEL_COLOR)));
-      line.append(Common.literalText(room.cleanliness() + "%").withStyle(Style.EMPTY.withColor(WARNING_COLOR)));
-    }
-
-    if (room.currentGuests() > 0 || room.totalBeds() != 1) {
-      appendSeparator(line, hasContent);
-      line.append(Common.literalText("床 ").withStyle(Style.EMPTY.withColor(LABEL_COLOR)));
-      line.append(Common.literalText(room.currentGuests() + "/" + room.totalBeds())
-                     .withStyle(Style.EMPTY.withColor(VALUE_COLOR)));
-    }
+    hasContent = appendMetric(line, hasContent, COMFORT_ICON, room.comfort(), Style.EMPTY.withColor(COMFORT_COLOR),
+                              COMFORT_COLOR);
+    hasContent = appendMetric(line, hasContent, LIGHT_ICON, room.light(), Style.EMPTY.withColor(LIGHT_COLOR),
+                              LIGHT_COLOR);
+    appendMetric(line, hasContent, HUMIDITY_ICON, room.humidity(), Style.EMPTY.withColor(HUMIDITY_COLOR),
+                 HUMIDITY_COLOR);
 
     return line;
   }
 
-  private static boolean appendMetric(MutableComponent line, boolean hasContent, String icon, int value, int color) {
+  private static Optional<MutableComponent> formatStatusLine(RoomSnapshot room) {
+    MutableComponent line = Common.literalText("");
+    boolean hasContent = false;
+
+    if (room.currentGuests() > 0 || room.totalBeds() != 1) {
+      hasContent = appendMetric(line, hasContent, BED_ICON, room.currentGuests() + "/" + room.totalBeds(),
+                                ROOM_ICON_STYLE, BED_COLOR);
+    }
+
+    if (room.cleanliness() < 100) {
+      hasContent = appendMetric(line, hasContent, CLEANLINESS_ICON, room.cleanliness() + "%", ROOM_ICON_STYLE,
+                                CLEANLINESS_COLOR);
+    }
+
+    return hasContent ? Optional.of(line) : Optional.empty();
+  }
+
+  private static boolean appendMetric(MutableComponent line, boolean hasContent, String icon, int value, Style iconStyle,
+      int valueColor) {
+    return appendMetric(line, hasContent, icon, String.valueOf(value), iconStyle, valueColor);
+  }
+
+  private static boolean appendMetric(MutableComponent line, boolean hasContent, String icon, String value,
+      Style iconStyle, int valueColor) {
     appendSeparator(line, hasContent);
-    line.append(Common.literalText(icon + " ").withStyle(Style.EMPTY.withColor(color)));
-    line.append(Common.literalText(String.valueOf(value)).withStyle(Style.EMPTY.withColor(color)));
+    line.append(Common.literalText(icon + " ").withStyle(iconStyle));
+    line.append(Common.literalText(value).withStyle(Style.EMPTY.withColor(valueColor)));
     return true;
   }
 
@@ -113,6 +131,9 @@ public class CurrentRoomInfo {
   }
 
   private record RoomSnapshot(int comfort, int light, int humidity, int cleanliness, int currentGuests, int totalBeds) {
+  }
+
+  public record RoomHudText(MutableComponent attributesLine, Optional<MutableComponent> statusLine) {
   }
 
   private record Accessor(
