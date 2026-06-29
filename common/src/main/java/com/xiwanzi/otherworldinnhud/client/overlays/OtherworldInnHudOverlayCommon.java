@@ -24,7 +24,11 @@ public class OtherworldInnHudOverlayCommon {
 
   public static void render(@NonNull GuiGraphics graphics, @NonNull DeltaTracker tickCounter) {
     Minecraft mc = Minecraft.getInstance();
+    renderSeasonHud(graphics, mc);
+    TaskHudOverlayCommon.render(graphics, mc);
+  }
 
+  private static void renderSeasonHud(@NonNull GuiGraphics graphics, Minecraft mc) {
     if (Common.drawDefaultHud(mc) && Common.vanillaShouldDrawHud(mc) && Calendar.validNeedCalendar(mc.player)
         && !Common.hideHudInCurrentDimension(mc)) {
       int screenWidth = mc.getWindow().getGuiScaledWidth();
