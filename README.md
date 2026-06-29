@@ -28,7 +28,7 @@ ServiceLoader.load(clazz, clazz.getClassLoader())
 
 ## Otherworld Inn 适配
 
-在整合包内 [Otherworld Inn](https://github.com/Yourzi/OtherworldInn)，HUD 会在季节信息下方额外显示当前房间状态。
+在整合包内对 [Otherworld Inn](https://github.com/Yourzi/OtherworldInn)适配，HUD 会在季节信息下方额外显示当前房间状态。
 
 房间信息只会在玩家位于已登记的旅社房间内时显示，包括：
 
