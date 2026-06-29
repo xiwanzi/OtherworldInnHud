@@ -2,6 +2,8 @@ package com.xiwanzi.otherworldinnhud.config;
 
 import com.xiwanzi.otherworldinnhud.client.gui.Location;
 import com.xiwanzi.otherworldinnhud.client.gui.ShowDay;
+import com.xiwanzi.otherworldinnhud.client.gui.TaskHudLocation;
+import com.xiwanzi.otherworldinnhud.client.gui.TaskHudStyle;
 
 public class DefaultValues {
   public static class Client {
@@ -29,6 +31,8 @@ public class DefaultValues {
     public static final boolean DEFAULT_ENABLE_MINIMAP_INTEGRATION = true;
     public static final boolean DEFAULT_SHOW_DEFAULT_WHEN_MINIMAP_HIDDEN = false;
     public static final boolean DEFAULT_ENABLE_TASK_HUD = true;
+    public static final TaskHudLocation DEFAULT_TASK_HUD_LOCATION = TaskHudLocation.CENTER;
+    public static final TaskHudStyle DEFAULT_TASK_HUD_STYLE = TaskHudStyle.CLEAN_CLOTH;
     public static final int DEFAULT_TASK_HUD_X_OFFSET = 8;
     public static final int DEFAULT_TASK_HUD_Y_OFFSET = 8;
     public static final double DEFAULT_TASK_HUD_SCALE = 1.0;

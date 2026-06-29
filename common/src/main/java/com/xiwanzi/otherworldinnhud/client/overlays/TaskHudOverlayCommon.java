@@ -1,6 +1,9 @@
 package com.xiwanzi.otherworldinnhud.client.overlays;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.xiwanzi.otherworldinnhud.Common;
+import com.xiwanzi.otherworldinnhud.client.gui.TaskHudLocation;
+import com.xiwanzi.otherworldinnhud.client.gui.TaskHudStyle;
 import com.xiwanzi.otherworldinnhud.config.OtherworldInnHudClient;
 import com.xiwanzi.otherworldinnhud.impl.minimap.CurrentMinimap;
 import com.xiwanzi.otherworldinnhud.impl.otherworldinn.CurrentTaskInfo;
@@ -22,19 +25,25 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
+import org.lwjgl.glfw.GLFW;
 
 public final class TaskHudOverlayCommon {
   private static final ResourceLocation STORY_TITLE_TEXTURE =
       Common.location("textures/gui/task_hud/story_wish_title.png");
   private static final ResourceLocation TOWN_TITLE_TEXTURE =
       Common.location("textures/gui/task_hud/town_commission_title.png");
-  private static final int BLOCK_WIDTH = 176;
   private static final int TEXT_WIDTH = 172;
-  private static final int TITLE_WIDTH = 92;
-  private static final int TITLE_HEIGHT = 18;
-  private static final int BODY_LEFT_PADDING = 0;
+  private static final int TITLE_WIDTH = 116;
+  private static final int TITLE_HEIGHT = 20;
+  private static final int BODY_FRAME = 4;
+  private static final int BODY_TEXT_PADDING_X = 5;
+  private static final int BODY_VISUAL_WIDTH = TEXT_WIDTH + (BODY_TEXT_PADDING_X * 2) + (BODY_FRAME * 2);
   private static final int BODY_TOP_PADDING = 2;
+  private static final int BODY_BOTTOM_PADDING = 5;
   private static final int TITLE_TO_BODY_GAP = 3;
+  private static final int SECTION_GAP = 3;
+  private static final int CENTER_COLUMN_GAP = 16;
+  private static final int CENTER_Y_OFFSET = -28;
   private static final int TASK_TITLE_COLOR = 0xF8E6B0;
   private static final int REQUIREMENT_OPEN_COLOR = 0xD9C9A7;
   private static final int REQUIREMENT_COMPLETE_COLOR = 0x8DE08A;
@@ -63,34 +72,118 @@ public final class TaskHudOverlayCommon {
     }
 
     double scale = OtherworldInnHudClient.getTaskHudScale();
+    TaskHudLocation location = OtherworldInnHudClient.getTaskHudLocation();
+    TaskHudStyle style = TaskHudStyle.CLEAN_CLOTH;
     int screenWidth = mc.getWindow().getGuiScaledWidth();
-    int rightMargin = OtherworldInnHudClient.getTaskHudX();
-    int topMargin = getTopMargin(mc);
-    int x = (int) ((screenWidth - rightMargin - Math.ceil(BLOCK_WIDTH * scale)) / scale);
-    int y = (int) (topMargin / scale);
+    int screenHeight = mc.getWindow().getGuiScaledHeight();
     int gap = (mc.font.lineHeight * OtherworldInnHudClient.getTaskHudGapLines()) + 4;
+    List<Integer> blockHeights = measureBlockHeights(mc.font, renderTasks);
 
     graphics.pose().pushPose();
     graphics.pose().scale((float) scale, (float) scale, 1F);
-    int blockY = y;
-    for (RenderTask renderTask : renderTasks) {
-      int blockHeight = renderTask(graphics, mc, renderTask, x, blockY);
-      blockY += blockHeight + gap;
+    if (location == TaskHudLocation.CENTER) {
+      renderCenteredTasks(graphics, mc, renderTasks, blockHeights, screenWidth, screenHeight, scale, style);
+    } else {
+      renderRightSideTasks(graphics, mc, renderTasks, blockHeights, screenWidth, screenHeight, scale, gap);
     }
     graphics.pose().popPose();
   }
 
   private static boolean shouldDraw(Minecraft mc) {
     return OtherworldInnHudClient.getEnableMod() && OtherworldInnHudClient.getEnableTaskHud()
-        && Common.vanillaShouldDrawHud(mc);
+        && isTaskHudKeyDown(mc) && Common.vanillaShouldDrawHud(mc);
   }
 
-  private static int getTopMargin(Minecraft mc) {
-    int topMargin = OtherworldInnHudClient.getTaskHudY();
-    if (CurrentMinimap.hasVisibleMinimap(mc)) {
-      topMargin = Math.max(topMargin, OtherworldInnHudClient.getTaskHudMinimapReservedHeight());
+  public static boolean shouldHideCrosshair(Minecraft mc) {
+    return shouldDraw(mc);
+  }
+
+  private static boolean isTaskHudKeyDown(Minecraft mc) {
+    return mc.getWindow() != null
+        && InputConstants.isKeyDown(mc.getWindow().getWindow(), GLFW.GLFW_KEY_TAB);
+  }
+
+  private static void renderCenteredTasks(
+      GuiGraphics graphics,
+      Minecraft mc,
+      List<RenderTask> renderTasks,
+      List<Integer> blockHeights,
+      int screenWidth,
+      int screenHeight,
+      double scale,
+      TaskHudStyle style) {
+    int count = renderTasks.size();
+    int blockHeight = maxHeight(blockHeights);
+    int totalWidth = (BODY_VISUAL_WIDTH * count) + (CENTER_COLUMN_GAP * Math.max(0, count - 1));
+    int x = Math.max(0, (int) (((screenWidth / scale) - totalWidth) / 2D));
+    int y = Math.max(0, (int) (((screenHeight / scale) - blockHeight) / 2D) + CENTER_Y_OFFSET);
+
+    for (int i = 0; i < count; i++) {
+      int blockX = x + (i * (BODY_VISUAL_WIDTH + CENTER_COLUMN_GAP));
+      renderTask(graphics, mc, renderTasks.get(i), blockX, y, blockHeight, true, style);
     }
-    return topMargin;
+  }
+
+  private static void renderRightSideTasks(
+      GuiGraphics graphics,
+      Minecraft mc,
+      List<RenderTask> renderTasks,
+      List<Integer> blockHeights,
+      int screenWidth,
+      int screenHeight,
+      double scale,
+      int gap) {
+    int totalHeight = totalHeight(blockHeights, gap);
+    int x = taskHudX(screenWidth, scale);
+    int y = taskHudY(mc, screenHeight, scale, totalHeight);
+
+    int blockY = y;
+    for (int i = 0; i < renderTasks.size(); i++) {
+      int blockHeight = renderTask(
+          graphics, mc, renderTasks.get(i), x, blockY, blockHeights.get(i), false, TaskHudStyle.CLEAN_CLOTH);
+      blockY += blockHeight + gap;
+    }
+  }
+
+  private static int taskHudX(int screenWidth, double scale) {
+    int rightMargin = OtherworldInnHudClient.getTaskHudX();
+    return (int) ((screenWidth - rightMargin - Math.ceil(BODY_VISUAL_WIDTH * scale)) / scale);
+  }
+
+  private static int taskHudY(Minecraft mc, int screenHeight, double scale, int totalHeight) {
+    int y = (int) (((screenHeight / scale) - totalHeight) / 2D) + OtherworldInnHudClient.getTaskHudY();
+    int topReserve = 0;
+    if (CurrentMinimap.hasVisibleMinimap(mc)) {
+      topReserve = (int) Math.ceil(OtherworldInnHudClient.getTaskHudMinimapReservedHeight() / scale);
+    }
+    return Math.max(y, topReserve);
+  }
+
+  private static int maxHeight(List<Integer> heights) {
+    int max = 0;
+    for (int height : heights) {
+      max = Math.max(max, height);
+    }
+    return max;
+  }
+
+  private static List<Integer> measureBlockHeights(Font font, List<RenderTask> renderTasks) {
+    List<Integer> heights = new ArrayList<>(renderTasks.size());
+    for (RenderTask renderTask : renderTasks) {
+      heights.add(measureTaskHeight(font, renderTask.task));
+    }
+    return heights;
+  }
+
+  private static int totalHeight(List<Integer> heights, int gap) {
+    int total = 0;
+    for (int height : heights) {
+      total += height;
+    }
+    if (!heights.isEmpty()) {
+      total += gap * (heights.size() - 1);
+    }
+    return total;
   }
 
   private static void updateStates(List<TaskSnapshot> tasks, long now) {
@@ -141,34 +234,136 @@ public final class TaskHudOverlayCommon {
     return renderTasks.size() <= 2 ? renderTasks : List.copyOf(renderTasks.subList(0, 2));
   }
 
-  private static int renderTask(GuiGraphics graphics, Minecraft mc, RenderTask renderTask, int x, int y) {
+  private static int renderTask(
+      GuiGraphics graphics,
+      Minecraft mc,
+      RenderTask renderTask,
+      int x,
+      int y,
+      int blockHeight,
+      boolean bodyPanel,
+      TaskHudStyle style) {
     TaskSnapshot task = renderTask.task;
     float alpha = renderTask.alpha;
     Font font = mc.font;
-    int titleX = x + BODY_LEFT_PADDING;
+    BodyPalette palette = bodyPalette(style);
+    if (bodyPanel) {
+      renderBodyBackground(graphics, x, y, blockHeight, alpha, palette);
+    }
+    int titleX = x + ((BODY_VISUAL_WIDTH - TITLE_WIDTH) / 2);
     renderTitle(graphics, mc, task, titleX, y, alpha);
 
-    int textX = x + BODY_LEFT_PADDING;
-    int lineY = y + TITLE_HEIGHT + TITLE_TO_BODY_GAP;
-    lineY = drawWrapped(graphics, font, task.title(), textX, lineY, TASK_TITLE_COLOR, alpha, true);
-    lineY += BODY_TOP_PADDING;
+    int textX = x + BODY_FRAME + BODY_TEXT_PADDING_X;
+    int lineY = y + TITLE_HEIGHT + TITLE_TO_BODY_GAP + BODY_TOP_PADDING;
+    int taskTitleColor = bodyPanel ? palette.taskTitleText : TASK_TITLE_COLOR;
+    int requirementOpenColor = bodyPanel ? palette.requirementText : REQUIREMENT_OPEN_COLOR;
+    int requirementCompleteColor = bodyPanel ? palette.completeText : REQUIREMENT_COMPLETE_COLOR;
+    int rewardColor = bodyPanel ? palette.rewardText : REWARD_COLOR;
+    boolean textShadow = !bodyPanel;
+    if (task.guestName() != null) {
+      lineY = drawWrapped(graphics, font, formatGuestName(task.guestName()), textX, lineY, taskTitleColor, alpha,
+                          textShadow);
+      lineY += SECTION_GAP;
+    }
+
+    lineY = drawWrapped(graphics, font, task.title(), textX, lineY, taskTitleColor, alpha, textShadow);
+
+    if (!task.requirements().isEmpty()) {
+      lineY += SECTION_GAP;
+    }
 
     for (RequirementSnapshot requirement : task.requirements()) {
-      MutableComponent line = Common.literalText(requirement.complete() ? "[x] " : "[ ] ");
-      line.append(requirement.display());
-      if (requirement.required() > 1 || requirement.current() > 0) {
-        line.append(Common.literalText(" " + requirement.current() + "/" + requirement.required()));
-      }
-      int color = requirement.complete() ? REQUIREMENT_COMPLETE_COLOR : REQUIREMENT_OPEN_COLOR;
-      lineY = drawWrapped(graphics, font, line, textX, lineY, color, alpha, true);
+      MutableComponent line = formatRequirement(requirement);
+      int color = requirement.complete() ? requirementCompleteColor : requirementOpenColor;
+      lineY = drawWrapped(graphics, font, line, textX, lineY, color, alpha, textShadow);
     }
 
     if (!task.rewards().isEmpty()) {
-      lineY += BODY_TOP_PADDING;
-      lineY = drawWrapped(graphics, font, formatRewards(task.rewards()), textX, lineY, REWARD_COLOR, alpha, true);
+      lineY += SECTION_GAP;
+      lineY = drawWrapped(graphics, font, formatRewards(task.rewards()), textX, lineY, rewardColor, alpha, textShadow);
     }
 
-    return Math.max(TITLE_HEIGHT, lineY - y);
+    return Math.max(blockHeight, Math.max(TITLE_HEIGHT, lineY - y));
+  }
+
+  private static void renderBodyBackground(
+      GuiGraphics graphics, int x, int y, int blockHeight, float alpha, BodyPalette palette) {
+    int backgroundX = x;
+    int backgroundY = y + TITLE_HEIGHT;
+    int backgroundWidth = BODY_VISUAL_WIDTH;
+    int backgroundHeight = Math.max(10, blockHeight - TITLE_HEIGHT);
+
+    graphics.fill(backgroundX, backgroundY, backgroundX + backgroundWidth, backgroundY + backgroundHeight,
+                  withAlpha(palette.outerWood, alpha * 0.94F));
+    graphics.fill(backgroundX + 1, backgroundY + 1, backgroundX + backgroundWidth - 1,
+                  backgroundY + backgroundHeight - 1, withAlpha(palette.innerWood, alpha * 0.92F));
+    graphics.fill(backgroundX + 2, backgroundY + 2, backgroundX + backgroundWidth - 2,
+                  backgroundY + backgroundHeight - 2, withAlpha(palette.woodShadow, alpha * 0.88F));
+    graphics.fill(backgroundX + BODY_FRAME, backgroundY + BODY_FRAME,
+                  backgroundX + backgroundWidth - BODY_FRAME, backgroundY + backgroundHeight - BODY_FRAME,
+                  withAlpha(palette.cloth, alpha * 0.92F));
+
+    int clothX = backgroundX + BODY_FRAME;
+    int clothY = backgroundY + BODY_FRAME;
+    int clothWidth = backgroundWidth - (BODY_FRAME * 2);
+    int clothHeight = backgroundHeight - (BODY_FRAME * 2);
+    graphics.fill(clothX, clothY, clothX + clothWidth, clothY + 1,
+                  withAlpha(palette.clothLight, alpha * 0.38F));
+    graphics.fill(clothX, clothY + clothHeight - 1, clothX + clothWidth, clothY + clothHeight,
+                  withAlpha(palette.clothShadow, alpha * 0.26F));
+    graphics.fill(clothX, clothY, clothX + 1, clothY + clothHeight,
+                  withAlpha(palette.clothLight, alpha * 0.24F));
+    graphics.fill(clothX + clothWidth - 1, clothY, clothX + clothWidth, clothY + clothHeight,
+                  withAlpha(palette.clothShadow, alpha * 0.24F));
+
+    for (int lineY = clothY + 5; lineY < clothY + clothHeight - 3; lineY += palette.threadSpacing) {
+      graphics.fill(clothX + 4, lineY, clothX + clothWidth - 4, lineY + 1,
+                    withAlpha(palette.thread, alpha * palette.threadAlpha));
+    }
+    for (int lineX = clothX + 10; lineX < clothX + clothWidth - 8; lineX += palette.threadSpacing * 3) {
+      graphics.fill(lineX, clothY + 3, lineX + 1, clothY + clothHeight - 3,
+                    withAlpha(palette.thread, alpha * palette.threadAlpha * 0.55F));
+    }
+
+    graphics.fill(backgroundX + 3, backgroundY + 3, backgroundX + 14, backgroundY + 4,
+                  withAlpha(palette.woodHighlight, alpha * 0.58F));
+    graphics.fill(backgroundX + 3, backgroundY + 3, backgroundX + 4, backgroundY + 11,
+                  withAlpha(palette.woodHighlight, alpha * 0.48F));
+    graphics.fill(backgroundX + backgroundWidth - 14, backgroundY + backgroundHeight - 4,
+                  backgroundX + backgroundWidth - 3, backgroundY + backgroundHeight - 3,
+                  withAlpha(palette.woodShadow, alpha * 0.72F));
+    graphics.fill(backgroundX + backgroundWidth - 4, backgroundY + backgroundHeight - 11,
+                  backgroundX + backgroundWidth - 3, backgroundY + backgroundHeight - 3,
+                  withAlpha(palette.woodShadow, alpha * 0.62F));
+  }
+
+  private static int measureTaskHeight(Font font, TaskSnapshot task) {
+    int height = TITLE_HEIGHT + TITLE_TO_BODY_GAP + BODY_TOP_PADDING;
+    if (task.guestName() != null) {
+      height += wrappedHeight(font, formatGuestName(task.guestName()));
+      height += SECTION_GAP;
+    }
+
+    height += wrappedHeight(font, task.title());
+
+    if (!task.requirements().isEmpty()) {
+      height += SECTION_GAP;
+    }
+    for (RequirementSnapshot requirement : task.requirements()) {
+      height += wrappedHeight(font, formatRequirement(requirement));
+    }
+
+    if (!task.rewards().isEmpty()) {
+      height += SECTION_GAP;
+      height += wrappedHeight(font, formatRewards(task.rewards()));
+    }
+    height += BODY_BOTTOM_PADDING;
+
+    return Math.max(TITLE_HEIGHT, height);
+  }
+
+  private static int wrappedHeight(Font font, Component text) {
+    return font.split(text, TEXT_WIDTH).size() * font.lineHeight;
   }
 
   private static void renderTitle(GuiGraphics graphics, Minecraft mc, TaskSnapshot task, int x, int y, float alpha) {
@@ -198,6 +393,10 @@ public final class TaskHudOverlayCommon {
     return y;
   }
 
+  private static MutableComponent formatGuestName(Component guestName) {
+    return guestName.copy();
+  }
+
   private static MutableComponent formatRewards(List<RewardSnapshot> rewards) {
     MutableComponent line = Common.translatedText("hud.otherworldinn_hud.task.rewards").append(Common.literalText(" "));
     for (int i = 0; i < rewards.size(); i++) {
@@ -219,9 +418,83 @@ public final class TaskHudOverlayCommon {
     return line;
   }
 
+  private static MutableComponent formatRequirement(RequirementSnapshot requirement) {
+    MutableComponent line = Common.literalText(requirement.complete() ? "[x] " : "[ ] ");
+    line.append(requirement.display());
+    if (requirement.required() > 1 || requirement.current() > 0) {
+      line.append(Common.literalText(" " + requirement.current() + "/" + requirement.required()));
+    }
+    return line;
+  }
+
+  private static BodyPalette bodyPalette(TaskHudStyle style) {
+    return switch (style) {
+      case WARM_CLOTH -> new BodyPalette(
+          0x3B2112, 0x75421F, 0xB77B3E, 0x3F2112,
+          0xD7B47A, 0xF1D79E, 0x9B6C39, 0xA67845,
+          7, 0.17F, 0x593014, 0x51402D, 0x2D7B35, 0x85520A);
+      case HEAVY_FRAME -> new BodyPalette(
+          0x25140B, 0x653619, 0xA26732, 0x2A160B,
+          0xCDAF79, 0xE9D19A, 0x7D552F, 0x7A5636,
+          6, 0.21F, 0x472611, 0x443525, 0x286C31, 0x744506);
+      case CLEAN_CLOTH -> new BodyPalette(
+          0x332012, 0x6F4322, 0xB0773B, 0x3A2212,
+          0xDCC38D, 0xF3E0AA, 0x9F7445, 0xA98255,
+          9, 0.12F, 0x543018, 0x4C4030, 0x2F7B37, 0x875306);
+    };
+  }
+
   private static int withAlpha(int rgb, float alpha) {
     int clamped = Math.max(0, Math.min(255, Math.round(alpha * 255F)));
     return (clamped << 24) | (rgb & 0xFFFFFF);
+  }
+
+  private static final class BodyPalette {
+    private final int outerWood;
+    private final int innerWood;
+    private final int woodHighlight;
+    private final int woodShadow;
+    private final int cloth;
+    private final int clothLight;
+    private final int clothShadow;
+    private final int thread;
+    private final int threadSpacing;
+    private final float threadAlpha;
+    private final int taskTitleText;
+    private final int requirementText;
+    private final int completeText;
+    private final int rewardText;
+
+    private BodyPalette(
+        int outerWood,
+        int innerWood,
+        int woodHighlight,
+        int woodShadow,
+        int cloth,
+        int clothLight,
+        int clothShadow,
+        int thread,
+        int threadSpacing,
+        float threadAlpha,
+        int taskTitleText,
+        int requirementText,
+        int completeText,
+        int rewardText) {
+      this.outerWood = outerWood;
+      this.innerWood = innerWood;
+      this.woodHighlight = woodHighlight;
+      this.woodShadow = woodShadow;
+      this.cloth = cloth;
+      this.clothLight = clothLight;
+      this.clothShadow = clothShadow;
+      this.thread = thread;
+      this.threadSpacing = threadSpacing;
+      this.threadAlpha = threadAlpha;
+      this.taskTitleText = taskTitleText;
+      this.requirementText = requirementText;
+      this.completeText = completeText;
+      this.rewardText = rewardText;
+    }
   }
 
   private record RenderTask(TaskSnapshot task, float alpha) {

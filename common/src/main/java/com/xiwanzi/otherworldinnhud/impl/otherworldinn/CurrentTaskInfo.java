@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -26,6 +27,16 @@ public final class CurrentTaskInfo {
       "com.otherworldinn.api.OtherworldInnHudSnapshotApi",
       "com.otherworldinn.client.hud.OtherworldInnHudSnapshotApi"
   };
+  private static final Map<String, String> STORY_GUEST_NAME_KEYS = Map.of(
+      "wandering_cartographer", "hud.otherworldinn_hud.task.guest.wandering_cartographer",
+      "wandering_minstrel", "hud.otherworldinn_hud.task.guest.wandering_minstrel",
+      "wandering_chef", "hud.otherworldinn_hud.task.guest.wandering_chef",
+      "fallen_noble", "hud.otherworldinn_hud.task.guest.fallen_noble",
+      "wandering_alchemist", "hud.otherworldinn_hud.task.guest.wandering_alchemist",
+      "archaeologist", "hud.otherworldinn_hud.task.guest.archaeologist",
+      "gem_merchant", "hud.otherworldinn_hud.task.guest.gem_merchant",
+      "old_knight", "hud.otherworldinn_hud.task.guest.old_knight"
+  );
   private static final int FORMAT_VERSION = 1;
   private static Accessor accessor;
   private static boolean integrationUnavailable;
@@ -102,6 +113,7 @@ public final class CurrentTaskInfo {
         id,
         kind,
         componentFromTag(tag, "TitleKey", "TitleText", defaultTaskTitle(kind)),
+        guestNameFromTask(tag, id, kind),
         requiresTurnIn,
         complete,
         tag.contains("AcceptedAt") ? tag.getLong("AcceptedAt") : Long.MAX_VALUE,
@@ -238,6 +250,11 @@ public final class CurrentTaskInfo {
   }
 
   private static Component componentFromTag(CompoundTag tag, String keyName, String textName, Component fallback) {
+    Component component = optionalComponentFromTag(tag, keyName, textName);
+    return component == null ? fallback : component;
+  }
+
+  private static Component optionalComponentFromTag(CompoundTag tag, String keyName, String textName) {
     String key = tag.getString(keyName);
     if (!key.isBlank()) {
       return Component.translatable(key);
@@ -248,7 +265,56 @@ public final class CurrentTaskInfo {
       return Common.literalText(text);
     }
 
-    return fallback;
+    return null;
+  }
+
+  private static Component guestNameFromTask(CompoundTag tag, String id, String kind) {
+    Component explicit = optionalComponentFromTag(tag, "GuestNameKey", "GuestNameText");
+    if (explicit != null) {
+      return explicit;
+    }
+
+    explicit = optionalComponentFromTag(tag, "StoryGuestNameKey", "StoryGuestNameText");
+    if (explicit != null || !"story_wish".equals(kind)) {
+      return explicit;
+    }
+
+    String guestId = tag.getString("GuestId");
+    if (guestId.isBlank()) {
+      guestId = storyGuestIdFromTaskId(id);
+    }
+
+    String key = STORY_GUEST_NAME_KEYS.get(guestId);
+    if (key != null) {
+      return Common.translatedText(key);
+    }
+    return guestId.isBlank() ? null : Common.literalText(formatIdentifier(guestId));
+  }
+
+  private static String storyGuestIdFromTaskId(String id) {
+    if (!id.startsWith("story_guest:")) {
+      return "";
+    }
+    String[] parts = id.split(":", 3);
+    return parts.length >= 2 ? parts[1] : "";
+  }
+
+  private static String formatIdentifier(String id) {
+    String[] parts = id.split("_");
+    StringBuilder builder = new StringBuilder(id.length());
+    for (String part : parts) {
+      if (part.isBlank()) {
+        continue;
+      }
+      if (!builder.isEmpty()) {
+        builder.append(' ');
+      }
+      builder.append(Character.toUpperCase(part.charAt(0)));
+      if (part.length() > 1) {
+        builder.append(part.substring(1));
+      }
+    }
+    return builder.isEmpty() ? id : builder.toString();
   }
 
   private static Component defaultTaskTitle(String kind) {
@@ -315,6 +381,7 @@ public final class CurrentTaskInfo {
       String id,
       String kind,
       Component title,
+      Component guestName,
       boolean requiresTurnIn,
       boolean complete,
       long acceptedAt,
