@@ -3,7 +3,6 @@ package com.xiwanzi.otherworldinnhud.impl.otherworldinn;
 import com.xiwanzi.otherworldinnhud.Common;
 import com.xiwanzi.otherworldinnhud.platform.Services;
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -15,13 +14,11 @@ public class CurrentRoomInfo {
   private static final String COMFORT_ICON = "\uE002";
   private static final String LIGHT_ICON = "\uE003";
   private static final String HUMIDITY_ICON = "\uE004";
-  private static final String BED_ICON = "\uEA10";
   private static final String CLEANLINESS_ICON = "\uEA11";
   private static final int COMFORT_COLOR = 0xFF6A6A;
   private static final int LIGHT_COLOR = 0xFFD700;
   private static final int HUMIDITY_COLOR = 0x97FFFF;
-  private static final int BED_COLOR = 0x97FFFF;
-  private static final int CLEANLINESS_COLOR = 0xFF6A6A;
+  private static final int CLEANLINESS_COLOR = 0x00FF7F;
   private static final Style ROOM_ICON_STYLE = Style.EMPTY.withFont(Common.location("room_icons"));
   private static Accessor accessor;
   private static boolean integrationUnavailable;
@@ -30,7 +27,7 @@ public class CurrentRoomInfo {
   private CurrentRoomInfo() {
   }
 
-  public static Optional<RoomHudText> getHudText(Minecraft mc) {
+  public static Optional<MutableComponent> getHudText(Minecraft mc) {
     if (mc.player == null || !Services.PLATFORM.isModLoaded(OTHERWORLD_INN_MOD_ID) || integrationUnavailable) {
       return Optional.empty();
     }
@@ -42,7 +39,7 @@ public class CurrentRoomInfo {
 
     try {
       RoomSnapshot room = currentAccessor.get().findCurrentRoom(mc.player.blockPosition());
-      return room == null ? Optional.empty() : Optional.of(formatRoom(room));
+      return room == null ? Optional.empty() : Optional.of(formatAttributesLine(room));
     } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
       disableIntegration(e);
       return Optional.empty();
@@ -63,10 +60,6 @@ public class CurrentRoomInfo {
     }
   }
 
-  private static RoomHudText formatRoom(RoomSnapshot room) {
-    return new RoomHudText(formatAttributesLine(room), formatStatusLine(room));
-  }
-
   private static MutableComponent formatAttributesLine(RoomSnapshot room) {
     MutableComponent line = Common.literalText("");
     boolean hasContent = false;
@@ -75,27 +68,11 @@ public class CurrentRoomInfo {
                               COMFORT_COLOR);
     hasContent = appendMetric(line, hasContent, LIGHT_ICON, room.light(), Style.EMPTY.withColor(LIGHT_COLOR),
                               LIGHT_COLOR);
-    appendMetric(line, hasContent, HUMIDITY_ICON, room.humidity(), Style.EMPTY.withColor(HUMIDITY_COLOR),
-                 HUMIDITY_COLOR);
+    hasContent = appendMetric(line, hasContent, HUMIDITY_ICON, room.humidity(), Style.EMPTY.withColor(HUMIDITY_COLOR),
+                              HUMIDITY_COLOR);
+    appendMetric(line, hasContent, CLEANLINESS_ICON, room.cleanliness() + "%", ROOM_ICON_STYLE, CLEANLINESS_COLOR);
 
     return line;
-  }
-
-  private static Optional<MutableComponent> formatStatusLine(RoomSnapshot room) {
-    MutableComponent line = Common.literalText("");
-    boolean hasContent = false;
-
-    if (room.currentGuests() > 0 || room.totalBeds() != 1) {
-      hasContent = appendMetric(line, hasContent, BED_ICON, room.currentGuests() + "/" + room.totalBeds(),
-                                ROOM_ICON_STYLE, BED_COLOR);
-    }
-
-    if (room.cleanliness() < 100) {
-      hasContent = appendMetric(line, hasContent, CLEANLINESS_ICON, room.cleanliness() + "%", ROOM_ICON_STYLE,
-                                CLEANLINESS_COLOR);
-    }
-
-    return hasContent ? Optional.of(line) : Optional.empty();
   }
 
   private static boolean appendMetric(MutableComponent line, boolean hasContent, String icon, int value, Style iconStyle,
@@ -130,10 +107,7 @@ public class CurrentRoomInfo {
     }
   }
 
-  private record RoomSnapshot(int comfort, int light, int humidity, int cleanliness, int currentGuests, int totalBeds) {
-  }
-
-  public record RoomHudText(MutableComponent attributesLine, Optional<MutableComponent> statusLine) {
+  private record RoomSnapshot(int comfort, int light, int humidity, int cleanliness) {
   }
 
   private record Accessor(
@@ -144,9 +118,7 @@ public class CurrentRoomInfo {
       Method getComfort,
       Method getLight,
       Method getHumidity,
-      Method getCleanliness,
-      Method getCurrentGuests,
-      Method getTotalBeds
+      Method getCleanliness
   ) {
     private static Accessor create() throws ReflectiveOperationException {
       Class<?> teamManagerClass = loadClass("com.otherworldinn.world.team.service.TeamManager");
@@ -162,9 +134,7 @@ public class CurrentRoomInfo {
           roomDataClass.getMethod("getComfort"),
           roomDataClass.getMethod("getLight"),
           roomDataClass.getMethod("getHumidity"),
-          roomDataClass.getMethod("getCleanliness"),
-          roomDataClass.getMethod("getCurrentGuests"),
-          roomDataClass.getMethod("getTotalBeds")
+          roomDataClass.getMethod("getCleanliness")
       );
     }
 
@@ -185,16 +155,11 @@ public class CurrentRoomInfo {
         return null;
       }
 
-      Object currentGuests = getCurrentGuests.invoke(room);
-      int currentGuestCount = currentGuests instanceof Collection<?> guests ? guests.size() : 0;
-
       return new RoomSnapshot(
           (Integer) getComfort.invoke(room),
           (Integer) getLight.invoke(room),
           (Integer) getHumidity.invoke(room),
-          (Integer) getCleanliness.invoke(room),
-          currentGuestCount,
-          (Integer) getTotalBeds.invoke(room)
+          (Integer) getCleanliness.invoke(room)
       );
     }
   }

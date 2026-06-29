@@ -43,10 +43,7 @@ public class OtherworldInnHudOverlayCommon {
         lines.add(fertility.getHudText());
       }
 
-      CurrentRoomInfo.getHudText(mc).ifPresent(roomHudText -> {
-        lines.add(roomHudText.attributesLine());
-        roomHudText.statusLine().ifPresent(lines::add);
-      });
+      CurrentRoomInfo.getHudText(mc).ifPresent(lines::add);
 
       int maxLineWidth = lines.stream().mapToInt(mc.font::width).max().orElse(0);
       int lineHeight = mc.font.lineHeight;
