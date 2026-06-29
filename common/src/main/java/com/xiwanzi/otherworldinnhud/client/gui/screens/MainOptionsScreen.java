@@ -1,6 +1,7 @@
 package com.xiwanzi.otherworldinnhud.client.gui.screens;
 
 import com.xiwanzi.otherworldinnhud.Common;
+import com.xiwanzi.otherworldinnhud.client.gui.TaskHudLocation;
 import com.xiwanzi.otherworldinnhud.client.gui.components.buttons.MenuButton;
 import com.xiwanzi.otherworldinnhud.client.gui.components.buttons.MenuButton.MenuButtons;
 import com.xiwanzi.otherworldinnhud.config.OtherworldInnHudClient;
@@ -18,15 +19,21 @@ public class MainOptionsScreen extends OtherworldInnHudScreen {
   private static final Component SCREEN_TITLE = Common.translatedText("menu.otherworldinn_hud.main.title");
   private static final Component MINIMAP_SETTINGS = Common.translatedText("menu.otherworldinn_hud.main.minimap.options");
   private static final Component JOURNEYMAP = Common.translatedText("menu.otherworldinn_hud.main.journeymap.title");
+  private static final Component TASK_HUD_SETTINGS = Common.translatedText("menu.otherworldinn_hud.main.task.options");
   MenuButton seasonButton;
   MenuButton colorButton;
   CycleButton<Boolean> enableMinimapIntegrationButton;
   CycleButton<Boolean> showMinimapHiddenButton;
+  CycleButton<Boolean> enableTaskHudButton;
+  CycleButton<TaskHudLocation> taskHudLocationButton;
   Button journeyMapButton;
   private boolean enableMod;
+  private boolean enableTaskHud;
   private boolean showMinimapHidden;
   private boolean enableMinimapIntegration;
+  private TaskHudLocation taskHudLocation;
   private int minimapRow;
+  private int taskHudRow;
   private int journeyMapRow;
 
   public MainOptionsScreen(Screen parentScreen) {
@@ -41,12 +48,16 @@ public class MainOptionsScreen extends OtherworldInnHudScreen {
 
   public void loadConfig() {
     enableMod = OtherworldInnHudClient.getEnableMod();
+    enableTaskHud = OtherworldInnHudClient.getEnableTaskHud();
+    taskHudLocation = OtherworldInnHudClient.getTaskHudLocation();
     showMinimapHidden = OtherworldInnHudClient.getShowDefaultWhenMinimapHidden();
     enableMinimapIntegration = OtherworldInnHudClient.getEnableMinimapIntegration();
   }
 
   public void saveConfig() {
     OtherworldInnHudClient.setEnableMod(enableMod);
+    OtherworldInnHudClient.setEnableTaskHud(enableTaskHud);
+    OtherworldInnHudClient.setTaskHudLocation(taskHudLocation);
     OtherworldInnHudClient.setEnableMinimapIntegration(enableMinimapIntegration);
     OtherworldInnHudClient.setShowDefaultWhenMinimapHidden(showMinimapHidden);
     OtherworldInnHudClient.CLIENT_SPEC.save();
@@ -68,6 +79,7 @@ public class MainOptionsScreen extends OtherworldInnHudScreen {
     super.render(graphics, mouseX, mouseY, partialTicks);
 
     drawHeading(graphics, MINIMAP_SETTINGS, minimapRow);
+    drawHeading(graphics, TASK_HUD_SETTINGS, taskHudRow);
 
     if (Services.PLATFORM.isModLoaded("journeymap")) {
       drawHeading(graphics, JOURNEYMAP, journeyMapRow);
@@ -79,6 +91,8 @@ public class MainOptionsScreen extends OtherworldInnHudScreen {
     colorButton.active = enableMod;
     enableMinimapIntegrationButton.active = enableMod;
     showMinimapHiddenButton.active = enableMod;
+    enableTaskHudButton.active = enableMod;
+    taskHudLocationButton.active = enableMod && enableTaskHud;
   }
 
   public void seasonHudOptionsButtons() {
@@ -93,6 +107,27 @@ public class MainOptionsScreen extends OtherworldInnHudScreen {
         .withPos(rightButtonX, (buttonStartY + (row * offsetY))).withWidth(buttonWidth)
         .build();
     widgets.addAll(Arrays.asList(seasonButton, colorButton));
+  }
+
+  public void taskHudOptionsButtons() {
+    row += 2;
+    taskHudRow = row;
+
+    enableTaskHudButton = CycleButton.onOffBuilder(enableTaskHud)
+        .withTooltip(t -> Common.newTooltip("menu.otherworldinn_hud.main.enableTaskHud.tooltip"))
+        .create(leftButtonX, (buttonStartY + (row * offsetY)), buttonWidth, buttonHeight,
+                Common.translatedText("menu.otherworldinn_hud.main.enableTaskHud.button"),
+                (b, val) -> enableTaskHud = val);
+
+    taskHudLocationButton = CycleButton.builder(TaskHudLocation::getDisplayName)
+        .withTooltip(t -> Common.newTooltip("menu.otherworldinn_hud.main.taskHudLocation.tooltip"))
+        .withValues(TaskHudLocation.values())
+        .withInitialValue(taskHudLocation)
+        .create(rightButtonX, (buttonStartY + (row * offsetY)), buttonWidth, buttonHeight,
+                Common.translatedText("menu.otherworldinn_hud.main.taskHudLocation.button"),
+                (b, val) -> taskHudLocation = val);
+
+    widgets.addAll(Arrays.asList(enableTaskHudButton, taskHudLocationButton));
   }
 
   public void minimapOptionsButtons() {
@@ -143,6 +178,7 @@ public class MainOptionsScreen extends OtherworldInnHudScreen {
 
     row = -1;
     seasonHudOptionsButtons();
+    taskHudOptionsButtons();
     minimapOptionsButtons();
     journeymapOptions();
 

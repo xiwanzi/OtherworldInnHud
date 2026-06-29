@@ -3,6 +3,8 @@ package com.xiwanzi.otherworldinnhud.config;
 import com.xiwanzi.otherworldinnhud.Common;
 import com.xiwanzi.otherworldinnhud.client.gui.Location;
 import com.xiwanzi.otherworldinnhud.client.gui.ShowDay;
+import com.xiwanzi.otherworldinnhud.client.gui.TaskHudLocation;
+import com.xiwanzi.otherworldinnhud.client.gui.TaskHudStyle;
 import com.xiwanzi.otherworldinnhud.config.DefaultValues.Client;
 import com.xiwanzi.otherworldinnhud.util.StringLine;
 import java.util.Arrays;
@@ -31,6 +33,8 @@ public class OtherworldInnHudClient {
   private static ConfigValue<Boolean> enableMinimapIntegration;
   private static ConfigValue<Boolean> showDefaultWhenMinimapHidden;
   private static ConfigValue<Boolean> enableTaskHud;
+  private static ConfigValue<TaskHudLocation> taskHudLocation;
+  private static ConfigValue<TaskHudStyle> taskHudStyle;
   private static ConfigValue<Integer> taskHudX;
   private static ConfigValue<Integer> taskHudY;
   private static ConfigValue<Double> taskHudScale;
@@ -201,13 +205,23 @@ public class OtherworldInnHudClient {
                                       .lastLine("Default is " + Client.DEFAULT_ENABLE_TASK_HUD + "."))
         .define("enable_task_hud", Client.DEFAULT_ENABLE_TASK_HUD);
 
+    taskHudLocation = builder.comment(StringLine.builder()
+                                          .addLine("Where to display the task HUD.")
+                                          .lastLine("Default is " + Client.DEFAULT_TASK_HUD_LOCATION + "."))
+        .defineEnum("task_hud_location", Client.DEFAULT_TASK_HUD_LOCATION);
+
+    taskHudStyle = builder.comment(StringLine.builder()
+                                     .addLine("Visual style for the centered task HUD body panel.")
+                                     .lastLine("Default is " + Client.DEFAULT_TASK_HUD_STYLE + "."))
+        .defineEnum("task_hud_style", Client.DEFAULT_TASK_HUD_STYLE);
+
     taskHudX = builder.comment(StringLine.builder()
                                   .addLine("Right-side horizontal margin for the task HUD (in pixels).")
                                   .lastLine("Default is " + Client.DEFAULT_TASK_HUD_X_OFFSET + "."))
         .defineInRange("task_hud_x_margin", Client.DEFAULT_TASK_HUD_X_OFFSET, 0, 512);
 
     taskHudY = builder.comment(StringLine.builder()
-                                  .addLine("Top margin for the task HUD when no visible minimap is present (in pixels).")
+                                  .addLine("Vertical offset from the right-side centered task HUD position (in pixels).")
                                   .lastLine("Default is " + Client.DEFAULT_TASK_HUD_Y_OFFSET + "."))
         .defineInRange("task_hud_y_margin", Client.DEFAULT_TASK_HUD_Y_OFFSET, 0, 512);
 
@@ -404,6 +418,22 @@ public class OtherworldInnHudClient {
 
   public static void setEnableTaskHud(boolean enable) {
     OtherworldInnHudClient.enableTaskHud.set(enable);
+  }
+
+  public static TaskHudLocation getTaskHudLocation() {
+    return getOrDefault(taskHudLocation);
+  }
+
+  public static void setTaskHudLocation(TaskHudLocation location) {
+    OtherworldInnHudClient.taskHudLocation.set(location);
+  }
+
+  public static TaskHudStyle getTaskHudStyle() {
+    return getOrDefault(taskHudStyle);
+  }
+
+  public static void setTaskHudStyle(TaskHudStyle style) {
+    OtherworldInnHudClient.taskHudStyle.set(style);
   }
 
   public static int getTaskHudX() {
