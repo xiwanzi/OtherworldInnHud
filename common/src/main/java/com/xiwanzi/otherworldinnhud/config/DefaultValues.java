@@ -28,6 +28,12 @@ public class DefaultValues {
     public static final boolean DEFAULT_FERTILITY_REPLACES_SEASON = false;
     public static final boolean DEFAULT_ENABLE_MINIMAP_INTEGRATION = true;
     public static final boolean DEFAULT_SHOW_DEFAULT_WHEN_MINIMAP_HIDDEN = false;
+    public static final boolean DEFAULT_ENABLE_TASK_HUD = true;
+    public static final int DEFAULT_TASK_HUD_X_OFFSET = 8;
+    public static final int DEFAULT_TASK_HUD_Y_OFFSET = 8;
+    public static final double DEFAULT_TASK_HUD_SCALE = 1.0;
+    public static final int DEFAULT_TASK_HUD_MINIMAP_RESERVED_HEIGHT = 96;
+    public static final int DEFAULT_TASK_HUD_GAP_LINES = 2;
   }
 
   public static class Server {

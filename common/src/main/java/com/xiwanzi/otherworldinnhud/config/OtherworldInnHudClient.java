@@ -30,6 +30,12 @@ public class OtherworldInnHudClient {
   private static ConfigValue<Boolean> fertilityReplacesSeason;
   private static ConfigValue<Boolean> enableMinimapIntegration;
   private static ConfigValue<Boolean> showDefaultWhenMinimapHidden;
+  private static ConfigValue<Boolean> enableTaskHud;
+  private static ConfigValue<Integer> taskHudX;
+  private static ConfigValue<Integer> taskHudY;
+  private static ConfigValue<Double> taskHudScale;
+  private static ConfigValue<Integer> taskHudMinimapReservedHeight;
+  private static ConfigValue<Integer> taskHudGapLines;
 
   static {
     ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -186,6 +192,41 @@ public class OtherworldInnHudClient {
                                                                      + Client.DEFAULT_SHOW_DEFAULT_WHEN_MINIMAP_HIDDEN
                                                                      + "."))
         .define("enable_show_minimap_hidden", Client.DEFAULT_SHOW_DEFAULT_WHEN_MINIMAP_HIDDEN);
+    builder.pop();
+
+    builder.push("Task HUD");
+    enableTaskHud = builder.comment(StringLine.builder()
+                                      .addLine("Show active story wishes and town commissions on the right side?")
+                                      .addLine("(true/false)")
+                                      .lastLine("Default is " + Client.DEFAULT_ENABLE_TASK_HUD + "."))
+        .define("enable_task_hud", Client.DEFAULT_ENABLE_TASK_HUD);
+
+    taskHudX = builder.comment(StringLine.builder()
+                                  .addLine("Right-side horizontal margin for the task HUD (in pixels).")
+                                  .lastLine("Default is " + Client.DEFAULT_TASK_HUD_X_OFFSET + "."))
+        .defineInRange("task_hud_x_margin", Client.DEFAULT_TASK_HUD_X_OFFSET, 0, 512);
+
+    taskHudY = builder.comment(StringLine.builder()
+                                  .addLine("Top margin for the task HUD when no visible minimap is present (in pixels).")
+                                  .lastLine("Default is " + Client.DEFAULT_TASK_HUD_Y_OFFSET + "."))
+        .defineInRange("task_hud_y_margin", Client.DEFAULT_TASK_HUD_Y_OFFSET, 0, 512);
+
+    taskHudScale = builder.comment(StringLine.builder()
+                                      .addLine("The scale of the right-side task HUD.")
+                                      .lastLine("Default is " + Client.DEFAULT_TASK_HUD_SCALE + "."))
+        .defineInRange("task_hud_scale", Client.DEFAULT_TASK_HUD_SCALE, Client.HUD_SCALE_MIN, Client.HUD_SCALE_MAX);
+
+    taskHudMinimapReservedHeight = builder.comment(StringLine.builder()
+                                                   .addLine("Top area reserved when a visible minimap is detected.")
+                                                   .lastLine(
+                                                       "Default is "
+                                                           + Client.DEFAULT_TASK_HUD_MINIMAP_RESERVED_HEIGHT + "."))
+        .defineInRange("task_hud_minimap_reserved_height", Client.DEFAULT_TASK_HUD_MINIMAP_RESERVED_HEIGHT, 0, 512);
+
+    taskHudGapLines = builder.comment(StringLine.builder()
+                                     .addLine("Blank line count between stacked task HUD blocks.")
+                                     .lastLine("Default is " + Client.DEFAULT_TASK_HUD_GAP_LINES + "."))
+        .defineInRange("task_hud_gap_lines", Client.DEFAULT_TASK_HUD_GAP_LINES, 0, 8);
     builder.pop();
     builder.pop();
   }
@@ -354,5 +395,54 @@ public class OtherworldInnHudClient {
 
   public static void setEnableMinimapIntegration(boolean enable) {
     OtherworldInnHudClient.enableMinimapIntegration.set(enable);
+  }
+
+  // Task HUD
+  public static boolean getEnableTaskHud() {
+    return getOrDefault(enableTaskHud);
+  }
+
+  public static void setEnableTaskHud(boolean enable) {
+    OtherworldInnHudClient.enableTaskHud.set(enable);
+  }
+
+  public static int getTaskHudX() {
+    return getOrDefault(taskHudX);
+  }
+
+  public static void setTaskHudX(int x) {
+    OtherworldInnHudClient.taskHudX.set(x);
+  }
+
+  public static int getTaskHudY() {
+    return getOrDefault(taskHudY);
+  }
+
+  public static void setTaskHudY(int y) {
+    OtherworldInnHudClient.taskHudY.set(y);
+  }
+
+  public static double getTaskHudScale() {
+    return getOrDefault(taskHudScale);
+  }
+
+  public static void setTaskHudScale(double scale) {
+    OtherworldInnHudClient.taskHudScale.set(scale);
+  }
+
+  public static int getTaskHudMinimapReservedHeight() {
+    return getOrDefault(taskHudMinimapReservedHeight);
+  }
+
+  public static void setTaskHudMinimapReservedHeight(int height) {
+    OtherworldInnHudClient.taskHudMinimapReservedHeight.set(height);
+  }
+
+  public static int getTaskHudGapLines() {
+    return getOrDefault(taskHudGapLines);
+  }
+
+  public static void setTaskHudGapLines(int gapLines) {
+    OtherworldInnHudClient.taskHudGapLines.set(gapLines);
   }
 }

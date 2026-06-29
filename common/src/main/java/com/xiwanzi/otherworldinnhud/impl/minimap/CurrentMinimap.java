@@ -80,6 +80,10 @@ public class CurrentMinimap {
     return Common.allTrue(hiddenMinimaps);
   }
 
+  public static boolean hasVisibleMinimap(Minecraft mc) {
+    return OtherworldInnHudClient.getEnableMinimapIntegration() && !noMinimapLoaded() && !allMinimapsHidden(mc);
+  }
+
   /**
    * Determines if the season hud should be drawn.
    *
