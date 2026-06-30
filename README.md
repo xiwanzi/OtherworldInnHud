@@ -1,52 +1,71 @@
 # Otherworld Inn HUD
 
-Otherworld Inn HUD 是 [SeasonHud](https://github.com/IanMods/SeasonHud) 的一个小型派生版本，基于 `active/multi/1.21.1` 分支维护。
+A SeasonHud fork for the Otherworld Inn modpack.
 
-这个版本主要给旅社物语整合包使用，保留 SeasonHud 原本功能，同时做了两处调整：
+Based on [IanMods/SeasonHud](https://github.com/IanMods/SeasonHud) `active/multi/1.21.1`.
 
-1. 修复 NeoForge 环境下偶发的服务加载崩溃
-2. 增加 [Otherworld Inn](https://github.com/Yourzi/OtherworldInn) 的房间 HUD 显示
+Target:
 
-## 为什么会有这个版本
+* Minecraft `1.21.1`
+* Java `21`
+* NeoForge `21.1.x`
 
-SeasonHud 2.0.6 在 NeoForge / ModLauncher 的客户端启动阶段，偶尔会因为服务加载失败导致游戏崩溃，例如：
+Only NeoForge is enabled for now. Fabric / Forge sources are kept from upstream.
+
+## Changes
+
+* Fix service loading on NeoForge / ModLauncher.
+* Add room HUD for [Otherworld Inn](https://github.com/Yourzi/OtherworldInn).
+* Add quest HUD for Otherworld Inn guests and town commissions.
+* Keep upstream SeasonHud features and compatibility code.
+
+## Otherworld Inn HUD
+
+Room HUD shows when the player is inside a registered inn room:
+
+* comfort
+* light
+* humidity
+* cleanliness
+
+Quest HUD shows while holding `Tab`:
+
+* guest requests
+* town commissions
+* task progress
+* rewards
+* completion state
+
+The integration is optional. If Otherworld Inn is missing or unavailable, these HUD elements are hidden.
+
+## Config
+
+Client config:
 
 ```text
-Failed to load service for club.iananderson.seasonhud.platform.services.PlatformHelper
+config/otherworldinn_hud-client.toml
 ```
 
-问题大概出在 `ServiceLoader.load(clazz)` 依赖当前线程的 context classloader。
-在并行初始化过程中，这个 classloader 有时找不到 mod jar 里的 `META-INF/services` 文件。
+Server config:
 
-这个版本把服务加载方式改成了使用服务接口自己的 classloader：
-
-```java
-ServiceLoader.load(clazz, clazz.getClassLoader())
+```text
+<world>/serverconfig/otherworldinn_hud-server.toml
 ```
 
-这样可以避开线程 context classloader 不稳定带来的启动问题。
+## Build
 
-## Otherworld Inn 适配
+```powershell
+.\gradlew.bat :neoforge:build
+```
 
-在整合包内对 [Otherworld Inn](https://github.com/Yourzi/OtherworldInn)适配，HUD 会在季节信息下方额外显示当前房间状态。
+Output:
 
-房间信息只会在玩家位于已登记的旅社房间内时显示，包括：
-
-* 舒适度
-* 光照
-* 湿度
-* 洁净度
-
-洁净度使用独立图标，并按数值显示不同颜色：
-
-* `100`：绿色
-* `1-99`：橙色
-* `0`：红色
-
-如果没有安装 Otherworld Inn，或者接口发生变化，房间信息会自动隐藏，不会影响原本的季节 HUD，也不会影响游戏启动。
+```text
+neoforge/build/libs/
+```
 
 ## License
 
-SeasonHud 使用 MIT 协议。
+MIT, same as upstream SeasonHud.
 
-原始版权声明和协议文本保留在 [LICENSE](LICENSE)。
+See [LICENSE](LICENSE).
