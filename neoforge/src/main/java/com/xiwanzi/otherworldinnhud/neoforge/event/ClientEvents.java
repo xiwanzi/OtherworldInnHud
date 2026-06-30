@@ -12,7 +12,7 @@ public class ClientEvents {
   private ClientEvents() {
   }
 
-  @EventBusSubscriber(value = Dist.CLIENT, modid = Common.MOD_ID)
+  @EventBusSubscriber(value = Dist.CLIENT, modid = Common.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
   public static class ModBus {
     private ModBus() {
     }
